@@ -520,7 +520,7 @@
 <div class="container">
 
   <div class="card edit-note">
-    ✏️ <strong>Nota para edição:</strong> antes de publicar, troque os placeholders <code>[SEU WHATSAPP]</code>, <code>[CHAVE PIX]</code>, <code>[NOME DO TITULAR PIX]</code>, <code>[DATA DO SORTEIO]</code>, <code>[INSTAGRAM]</code> e o <code>firebaseConfig</code> no final do arquivo. O login administrativo agora é feito com um e-mail/senha real, criado por você no console do Firebase — veja o guia <em>instrucoes-configuracao.md</em> que veio junto com este arquivo.
+    ✏️ <strong>Nota para edição:</strong> antes de publicar, troque os placeholders <code>[CHAVE PIX]</code>, <code>[NOME DO TITULAR PIX]</code>, <code>[DATA DO SORTEIO]</code>, <code>[INSTAGRAM]</code>. O login administrativo agora é feito com um e-mail/senha real, criado por você no console do Firebase — veja o guia <em>instrucoes-configuracao.md</em> que veio junto com este arquivo.
   </div>
 
   <div class="card">
@@ -642,7 +642,8 @@
   // por você no console do Firebase. Veja instrucoes-configuracao.md.
 
   const TOTAL_NUMEROS = 250;
-  const WHATSAPP_NUMERO = "[SEU WHATSAPP]"; // ex: 5511999999999 (DDI+DDD+número, só dígitos)
+  const MAX_NUMEROS_POR_RESERVA = 10;
+  const WHATSAPP_NUMERO = atob("NTUxNDk5ODY2MzU4MQ==");
 
   // ======================================================
   // 2) Inicialização do Firebase
@@ -760,6 +761,10 @@
     if (selecionados.has(id)) {
       selecionados.delete(id);
     } else {
+      if (selecionados.size >= MAX_NUMEROS_POR_RESERVA) {
+        alert(`Você pode selecionar no máximo ${MAX_NUMEROS_POR_RESERVA} números por vez. Reserve estes e depois faça uma nova reserva se quiser mais.`);
+        return;
+      }
       selecionados.add(id);
     }
     atualizarGridVisual();
@@ -816,7 +821,7 @@
     `;
     modalOverlay.classList.add('on');
 
-    modalBox.querySelectorAll('.modal-btn').forEach(btn => {
+    modalBox.querySelectorAll('.modal-btn[data-status]').forEach(btn => {
       btn.addEventListener('click', () => {
         const novoStatus = btn.dataset.status;
         if (!novoStatus) { fecharModal(); return; }
@@ -858,6 +863,11 @@
       return;
     }
 
+    if (selecionados.size > MAX_NUMEROS_POR_RESERVA) {
+      alert(`Você pode reservar no máximo ${MAX_NUMEROS_POR_RESERVA} números por vez.`);
+      return;
+    }
+
     const ordenados = [...selecionados].sort();
 
     // confere de novo se continuam livres (evita corrida com outro comprador)
@@ -873,14 +883,16 @@
     }
 
     try {
+      const batch = writeBatch(db);
       for (const id of ordenados) {
-        await updateDoc(doc(db, "numeros", id), {
+        batch.update(doc(db, "numeros", id), {
           status: "reservado",
           nomeComprador,
           telefoneComprador,
           atualizadoEm: serverTimestamp()
         });
       }
+      await batch.commit();
     } catch (e) {
       alert('Não foi possível reservar agora. Tente novamente em instantes.');
       console.error(e);
