@@ -469,12 +469,12 @@
 
   /* ---------- CTA BAR ---------- */
   .cta-bar{
+    display:none;
     position:sticky;
     bottom:0;
     background:var(--branco);
     border-top:1px solid var(--cinza-300);
     padding:16px 24px;
-    display:flex;
     justify-content:space-between;
     align-items:center;
     flex-wrap:wrap;
@@ -482,6 +482,9 @@
     border-radius:var(--radius-lg) var(--radius-lg) 0 0;
     box-shadow:0 -8px 24px rgba(11,37,69,.08);
     z-index:5;
+  }
+  .cta-bar.visivel{
+    display:flex;
   }
   .cta-bar-inner{
     display:flex;
@@ -496,9 +499,12 @@
     font-size:.95rem;
   }
   .comprador-fields{
-    display:flex;
+    display:none;
     gap:8px;
     flex-wrap:wrap;
+  }
+  .comprador-fields.visivel{
+    display:flex;
   }
   .comprador-field{
     flex:1;
@@ -753,10 +759,10 @@
   <div class="modal-box" id="modal-box"></div>
 </div>
 
-<div class="cta-bar">
+<div class="cta-bar" id="cta-bar">
   <div class="cta-bar-inner">
     <div id="cta-text">Selecione seus números acima para continuar</div>
-    <div class="comprador-fields">
+    <div class="comprador-fields" id="comprador-fields">
       <div class="comprador-field">
         <input type="text" id="comprador-nome" placeholder="Seu nome" maxlength="100" autocomplete="name">
         <span class="campo-erro" id="erro-nome"></span>
@@ -817,6 +823,7 @@
   const grid = document.getElementById('grid');
   const gridWrapper = document.getElementById('grid-wrapper');
   const summary = document.getElementById('summary');
+  const ctaBar = document.getElementById('cta-bar');
   const ctaText = document.getElementById('cta-text');
   const waBtn = document.getElementById('whatsapp-btn');
   const progressBar = document.getElementById('progress-bar');
@@ -830,6 +837,7 @@
   const adminExit = document.getElementById('admin-exit');
   const modalOverlay = document.getElementById('modal-overlay');
   const modalBox = document.getElementById('modal-box');
+  const compradorFields = document.getElementById('comprador-fields');
   const compradorNomeInput = document.getElementById('comprador-nome');
   const compradorTelefoneInput = document.getElementById('comprador-telefone');
   const erroNome = document.getElementById('erro-nome');
@@ -1087,16 +1095,18 @@
   function atualizarResumoSelecao() {
     if (!dadosCarregados) {
       summary.textContent = 'Carregando números da rifa...';
-      ctaText.textContent = 'Carregando...';
-      waBtn.classList.add('disabled');
+      ctaBar.classList.remove('visivel');
+      compradorFields.classList.remove('visivel');
       return;
     }
     if (selecionados.size === 0) {
       summary.textContent = 'Nenhum número selecionado ainda.';
-      ctaText.textContent = 'Selecione seus números acima para continuar';
-      waBtn.classList.add('disabled');
+      ctaBar.classList.remove('visivel');
+      compradorFields.classList.remove('visivel');
       return;
     }
+    ctaBar.classList.add('visivel');
+    compradorFields.classList.add('visivel');
     const ordenados = [...selecionados].sort();
     const total = ordenados.length * 10;
     summary.textContent = `Números selecionados: ${ordenados.join(', ')} — Total: R$ ${total.toFixed(2).replace('.', ',')}`;
