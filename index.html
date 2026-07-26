@@ -25,9 +25,14 @@
     --radius-lg:18px;
     --radius-md:12px;
     --shadow:0 10px 30px rgba(11,37,69,.10);
+    --focus-ring:0 0 0 3px rgba(29,95,176,.5);
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   html{scroll-behavior:smooth;}
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+    *{animation-duration:.01ms !important; transition-duration:.01ms !important;}
+  }
   body{
     font-family:'Inter',system-ui,-apple-system,sans-serif;
     background:var(--cinza-50);
@@ -35,6 +40,10 @@
     line-height:1.6;
     font-size:16px;
     transition:background .3s ease;
+  }
+  a:focus-visible, button:focus-visible, input:focus-visible, .num:focus-visible{
+    outline:none;
+    box-shadow:var(--focus-ring);
   }
   body.admin-ativo{
     background:#20232b;
@@ -455,9 +464,15 @@
     gap:8px;
     flex-wrap:wrap;
   }
-  .comprador-fields input{
+  .comprador-field{
     flex:1;
     min-width:140px;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  .comprador-fields input{
+    width:100%;
     padding:10px 12px;
     border:1.5px solid var(--cinza-300);
     border-radius:var(--radius-md);
@@ -467,6 +482,14 @@
   .comprador-fields input:focus{
     outline:none;
     border-color:var(--azul-500);
+  }
+  .comprador-fields input.invalido{
+    border-color:var(--coral-dark);
+  }
+  .campo-erro{
+    color:var(--coral-dark);
+    font-size:.78rem;
+    min-height:1.1em;
   }
   .btn{
     display:inline-flex;
@@ -502,8 +525,8 @@
   @media (max-width: 560px){
     header{ padding:48px 16px 84px; }
     .card{ padding:22px; }
-    .numbers-grid{ grid-template-columns:repeat(auto-fill,minmax(42px,1fr)); gap:6px; }
-    .num{ font-size:.75rem; padding:10px 0; min-height:40px; }
+    .numbers-grid{ grid-template-columns:repeat(auto-fill,minmax(44px,1fr)); gap:8px; }
+    .num{ font-size:.75rem; padding:10px 0; min-height:44px; min-width:44px; }
     .cta-bar{ flex-direction:column; align-items:stretch; text-align:center; }
     .btn{ justify-content:center; }
   }
@@ -602,8 +625,14 @@
   <div class="cta-bar-inner">
     <div id="cta-text">Selecione seus números acima para continuar</div>
     <div class="comprador-fields">
-      <input type="text" id="comprador-nome" placeholder="Seu nome">
-      <input type="tel" id="comprador-telefone" placeholder="Seu WhatsApp (com DDD)">
+      <div class="comprador-field">
+        <input type="text" id="comprador-nome" placeholder="Seu nome" maxlength="100" autocomplete="name">
+        <span class="campo-erro" id="erro-nome"></span>
+      </div>
+      <div class="comprador-field">
+        <input type="tel" id="comprador-telefone" placeholder="Seu WhatsApp (com DDD)" maxlength="15" autocomplete="tel" inputmode="numeric">
+        <span class="campo-erro" id="erro-telefone"></span>
+      </div>
     </div>
   </div>
   <a href="#" target="_blank" id="whatsapp-btn" class="btn disabled">Reservar pelo WhatsApp</a>
@@ -670,6 +699,27 @@
   const modalBox = document.getElementById('modal-box');
   const compradorNomeInput = document.getElementById('comprador-nome');
   const compradorTelefoneInput = document.getElementById('comprador-telefone');
+  const erroNome = document.getElementById('erro-nome');
+  const erroTelefone = document.getElementById('erro-telefone');
+
+  function marcarErro(input, spanErro, mensagem) {
+    input.classList.toggle('invalido', !!mensagem);
+    spanErro.textContent = mensagem || '';
+  }
+  compradorNomeInput.addEventListener('input', () => marcarErro(compradorNomeInput, erroNome, ''));
+  function formatarTelefone(digitos) {
+    digitos = digitos.slice(0, 11);
+    if (digitos.length <= 2) return digitos;
+    if (digitos.length <= 6) return `(${digitos.slice(0, 2)}) ${digitos.slice(2)}`;
+    if (digitos.length <= 10) return `(${digitos.slice(0, 2)}) ${digitos.slice(2, 6)}-${digitos.slice(6)}`;
+    return `(${digitos.slice(0, 2)}) ${digitos.slice(2, 7)}-${digitos.slice(7)}`;
+  }
+
+  compradorTelefoneInput.addEventListener('input', () => {
+    const apenasDigitos = compradorTelefoneInput.value.replace(/\D/g, '');
+    compradorTelefoneInput.value = formatarTelefone(apenasDigitos);
+    marcarErro(compradorTelefoneInput, erroTelefone, '');
+  });
 
   let estado = {};       // { "001": {status:"livre"}, ... }
   let selecionados = new Set();
@@ -687,7 +737,16 @@
       div.className = 'num livre';
       div.textContent = id;
       div.dataset.id = id;
+      div.tabIndex = 0;
+      div.setAttribute('role', 'button');
+      div.setAttribute('aria-label', `Número ${id}, disponível`);
       div.addEventListener('click', () => onClickNumero(id));
+      div.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Enter' || ev.key === ' ') {
+          ev.preventDefault();
+          onClickNumero(id);
+        }
+      });
       grid.appendChild(div);
       elementos[id] = div;
     }
@@ -721,6 +780,8 @@
     });
   }
 
+  const ROTULO_STATUS = { livre: 'disponível', reservado: 'reservado, aguardando pagamento', pago: 'pago, indisponível' };
+
   function atualizarGridVisual() {
     for (const id in elementos) {
       const el = elementos[id];
@@ -728,8 +789,10 @@
       el.classList.remove('livre', 'reservado', 'pago', 'selected');
       if (selecionados.has(id) && status === 'livre') {
         el.classList.add('selected');
+        el.setAttribute('aria-label', `Número ${id}, selecionado`);
       } else {
         el.classList.add(status);
+        el.setAttribute('aria-label', `Número ${id}, ${ROTULO_STATUS[status]}`);
       }
     }
   }
@@ -833,6 +896,9 @@
   modalOverlay.addEventListener('click', (ev) => {
     if (ev.target === modalOverlay) fecharModal();
   });
+  document.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Escape' && modalOverlay.classList.contains('on')) fecharModal();
+  });
 
   function atualizarResumoSelecao() {
     if (selecionados.size === 0) {
@@ -856,10 +922,27 @@
     ev.preventDefault();
     if (selecionados.size === 0) return;
 
-    const nomeComprador = compradorNomeInput.value.trim();
-    const telefoneComprador = compradorTelefoneInput.value.trim();
-    if (!nomeComprador || !telefoneComprador) {
-      alert('Preencha seu nome e WhatsApp antes de reservar.');
+    const nomeComprador = compradorNomeInput.value.trim().replace(/\s+/g, ' ');
+    const telefoneDigitado = compradorTelefoneInput.value.trim();
+    const telefoneComprador = telefoneDigitado.replace(/\D/g, '');
+
+    marcarErro(compradorNomeInput, erroNome, '');
+    marcarErro(compradorTelefoneInput, erroTelefone, '');
+
+    let temErro = false;
+    if (nomeComprador.length < 3 || nomeComprador.length > 100) {
+      marcarErro(compradorNomeInput, erroNome, 'Digite seu nome completo (mínimo 3 letras).');
+      temErro = true;
+    } else if (!/^[A-Za-zÀ-ÖØ-öø-ÿ' -]+$/.test(nomeComprador)) {
+      marcarErro(compradorNomeInput, erroNome, 'O nome deve conter apenas letras e espaços.');
+      temErro = true;
+    }
+    if (telefoneComprador.length < 10 || telefoneComprador.length > 11) {
+      marcarErro(compradorTelefoneInput, erroTelefone, 'Digite um WhatsApp válido com DDD (10 ou 11 dígitos).');
+      temErro = true;
+    }
+    if (temErro) {
+      (erroNome.textContent ? compradorNomeInput : compradorTelefoneInput).focus();
       return;
     }
 
