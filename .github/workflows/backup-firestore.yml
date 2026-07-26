@@ -1,0 +1,34 @@
+name: Daily Firestore backup
+
+# GitHub Actions schedules must be a literal cron expression — env vars
+# and repo variables aren't evaluated here, so to change the backup time
+# edit the line below directly.
+# Format: "minute hour * * *", both in UTC.
+# TEMP FOR TESTING: every 10 minutes — revert to "0 9 * * *" (09:00 UTC
+# = 06:00 America/Sao_Paulo) once the workflow is confirmed working.
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        working-directory: scripts
+        run: npm install
+
+      - name: Run backup script and email it
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          BACKUP_TO_EMAIL: ${{ secrets.BACKUP_TO_EMAIL }}
+        run: node scripts/backup-firestore.mjs
