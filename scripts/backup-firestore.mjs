@@ -35,7 +35,7 @@ async function getAccessToken() {
   const now = Math.floor(Date.now() / 1000);
   const claims = {
     iss: sa.client_email,
-    scope: "https://www.googleapis.com/auth/datastore.readonly",
+    scope: "https://www.googleapis.com/auth/datastore",
     aud: "https://oauth2.googleapis.com/token",
     iat: now,
     exp: now + 3600,
