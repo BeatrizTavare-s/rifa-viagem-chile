@@ -65,7 +65,34 @@
     background:var(--cinza-50);
     clip-path:polygon(0 100%,0 40%,8% 55%,18% 30%,28% 60%,38% 20%,50% 58%,62% 15%,74% 55%,86% 25%,100% 50%,100% 100%);
   }
+  .neve{
+    position:absolute;
+    inset:0;
+    z-index:1;
+    pointer-events:none;
+    overflow:hidden;
+  }
+  .neve .floco{
+    position:absolute;
+    top:-10px;
+    background:#fff;
+    border-radius:50%;
+    opacity:.7;
+    animation:cair linear infinite, balancar ease-in-out infinite;
+  }
+  @keyframes cair{
+    to{ transform:translateY(100vh); }
+  }
+  @keyframes balancar{
+    0%, 100%{ margin-left:0; }
+    50%{ margin-left:20px; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .neve{ display:none; }
+  }
   .header-inner{
+    position:relative;
+    z-index:2;
     display:flex;
     flex-direction:column;
     align-items:center;
@@ -125,6 +152,16 @@
     max-width:600px;
     margin:0 auto;
     opacity:.92;
+  }
+  .destaque-verde{
+    color:#4ade80;
+  }
+  .neve-legenda{
+    display:block;
+    margin-top:12px;
+    font-size:.82rem;
+    font-style:italic;
+    opacity:.75;
   }
 
   /* ---------- LAYOUT ---------- */
@@ -588,11 +625,15 @@
     pointer-events:none;
   }
 
-  footer{
+  .footer-card{
+    background:linear-gradient(160deg,var(--azul-900) 0%,var(--azul-700) 55%,var(--azul-500) 100%);
+    color:var(--branco);
     text-align:center;
-    padding:36px 20px 56px;
-    color:var(--texto-suave);
+    padding:28px 20px;
     font-size:.85rem;
+  }
+  .footer-card strong{
+    opacity:.95;
   }
 
   /* ---------- RESPONSIVE ---------- */
@@ -680,9 +721,6 @@
     border-color:rgba(255,255,255,.2);
     color:#e8edf5;
   }
-  body.admin-ativo footer{
-    color:#7a8aa3;
-  }
   body.admin-ativo .admin-panel{
     background:rgba(245,166,35,.12);
     border-color:rgba(245,166,35,.4);
@@ -701,12 +739,14 @@
 <body>
 
 <header>
+  <div class="neve" id="neve" aria-hidden="true"></div>
   <div class="header-inner">
     <img src="mascote.png" alt="Mascote da rifa segurando a bandeira do Chile" class="mascote">
     <div class="header-text">
-      <span class="badge">🇨🇱 Sua chance de ganhar R$ 500</span>
-      <h1>Rifa R$ 500 — Ajude a realizar o sonho de uma viagem ao Chile!</h1>
-      <p>Concorra a R$ 500,00 em dinheiro e, ao mesmo tempo, ajude a tornar essa viagem realidade. Cada número comprado é uma chance de ganhar e uma contribuição direta para esse sonho. 💙</p>
+      <span class="badge">🇨🇱 Bora fazer esse sonho decolar?</span>
+      <h1>Compra um número, torce um pouquinho e talvez você que leve os <span class="destaque-verde">R$ 500</span>! 🎉</h1>
+      <p>Tô juntando uma grana pra realizar o sonho de conhecer o Chile, e cada número vendido me deixa mais perto disso — enquanto isso, alguém sortudo(a) sai daqui R$ 500,00 mais rico(a). Só R$ 10 o número, escolhe o seu aí embaixo e vem com a gente nessa! 💙</p>
+      <span class="neve-legenda">❄️ Nem a neve dos Andes esfria essa vontade de te ver ganhando!</span>
     </div>
   </div>
 </header>
@@ -792,6 +832,10 @@
 
 </div>
 
+<footer class="footer-card">
+  Feito com carinho para tornar essa viagem realidade 🇨🇱 · Dúvidas? Chame no WhatsApp ou Instagram <strong>[INSTAGRAM]</strong>
+</footer>
+
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal-box" id="modal-box"></div>
 </div>
@@ -812,10 +856,6 @@
   </div>
   <a href="#" target="_blank" id="whatsapp-btn" class="btn disabled">Reservar pelo WhatsApp</a>
 </div>
-
-<footer>
-  Feito com carinho para tornar essa viagem realidade 🇨🇱 · Dúvidas? Chame no WhatsApp ou Instagram <strong>[INSTAGRAM]</strong>
-</footer>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -1297,6 +1337,27 @@
   montarGrid();
   atualizarResumoSelecao();
   seedSeNecessario().then(escutarMudancas);
+</script>
+
+<script>
+  // Efeito de neve puramente decorativo no header — não depende do Firestore.
+  (function gerarNeve() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const container = document.getElementById('neve');
+    if (!container) return;
+    const QUANTIDADE = 60;
+    for (let i = 0; i < QUANTIDADE; i++) {
+      const floco = document.createElement('span');
+      floco.className = 'floco';
+      const tamanho = 2 + Math.random() * 3;
+      floco.style.width = `${tamanho}px`;
+      floco.style.height = `${tamanho}px`;
+      floco.style.left = `${Math.random() * 100}%`;
+      floco.style.animationDuration = `${8 + Math.random() * 10}s, ${3 + Math.random() * 3}s`;
+      floco.style.animationDelay = `${Math.random() * 10}s, ${Math.random() * 3}s`;
+      container.appendChild(floco);
+    }
+  })();
 </script>
 
 </body>
