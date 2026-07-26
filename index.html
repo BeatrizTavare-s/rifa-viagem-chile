@@ -438,10 +438,35 @@
     box-shadow:0 -8px 24px rgba(11,37,69,.08);
     z-index:5;
   }
+  .cta-bar-inner{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    flex:1;
+    min-width:220px;
+  }
   #cta-text{
     font-weight:600;
     color:var(--azul-900);
     font-size:.95rem;
+  }
+  .comprador-fields{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .comprador-fields input{
+    flex:1;
+    min-width:140px;
+    padding:10px 12px;
+    border:1.5px solid var(--cinza-300);
+    border-radius:var(--radius-md);
+    font-size:.85rem;
+    font-family:'Inter',sans-serif;
+  }
+  .comprador-fields input:focus{
+    outline:none;
+    border-color:var(--azul-500);
   }
   .btn{
     display:inline-flex;
@@ -574,7 +599,13 @@
 </div>
 
 <div class="cta-bar">
-  <div id="cta-text">Selecione seus números acima para continuar</div>
+  <div class="cta-bar-inner">
+    <div id="cta-text">Selecione seus números acima para continuar</div>
+    <div class="comprador-fields">
+      <input type="text" id="comprador-nome" placeholder="Seu nome">
+      <input type="tel" id="comprador-telefone" placeholder="Seu WhatsApp (com DDD)">
+    </div>
+  </div>
   <a href="#" target="_blank" id="whatsapp-btn" class="btn disabled">Reservar pelo WhatsApp</a>
 </div>
 
@@ -636,6 +667,8 @@
   const adminExit = document.getElementById('admin-exit');
   const modalOverlay = document.getElementById('modal-overlay');
   const modalBox = document.getElementById('modal-box');
+  const compradorNomeInput = document.getElementById('comprador-nome');
+  const compradorTelefoneInput = document.getElementById('comprador-telefone');
 
   let estado = {};       // { "001": {status:"livre"}, ... }
   let selecionados = new Set();
@@ -757,6 +790,11 @@
 
   function abrirModalAdmin(id, statusAtual) {
     const rotulo = { livre: 'Disponível', reservado: 'Reservado (aguardando pagamento)', pago: 'Pago' }[statusAtual];
+    const dados = estado[id] || {};
+    let compradorHtml = '';
+    if (dados.nomeComprador) {
+      compradorHtml = `<p>Comprador(a): <strong>${dados.nomeComprador}</strong><br>WhatsApp: <strong>${dados.telefoneComprador || '—'}</strong></p>`;
+    }
     let botoesHtml = '';
 
     if (statusAtual === 'livre') {
@@ -773,6 +811,7 @@
     modalBox.innerHTML = `
       <h3>Número ${id}</h3>
       <p>Status atual: <strong>${rotulo}</strong></p>
+      ${compradorHtml}
       <div class="modal-actions">${botoesHtml}</div>
     `;
     modalOverlay.classList.add('on');
@@ -812,6 +851,13 @@
     ev.preventDefault();
     if (selecionados.size === 0) return;
 
+    const nomeComprador = compradorNomeInput.value.trim();
+    const telefoneComprador = compradorTelefoneInput.value.trim();
+    if (!nomeComprador || !telefoneComprador) {
+      alert('Preencha seu nome e WhatsApp antes de reservar.');
+      return;
+    }
+
     const ordenados = [...selecionados].sort();
 
     // confere de novo se continuam livres (evita corrida com outro comprador)
@@ -830,6 +876,8 @@
       for (const id of ordenados) {
         await updateDoc(doc(db, "numeros", id), {
           status: "reservado",
+          nomeComprador,
+          telefoneComprador,
           atualizadoEm: serverTimestamp()
         });
       }
@@ -846,6 +894,8 @@
     window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${mensagem}`, '_blank');
 
     selecionados.clear();
+    compradorNomeInput.value = '';
+    compradorTelefoneInput.value = '';
     atualizarResumoSelecao();
   });
 
