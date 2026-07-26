@@ -34,6 +34,10 @@
     color:var(--texto);
     line-height:1.6;
     font-size:16px;
+    transition:background .3s ease;
+  }
+  body.admin-ativo{
+    background:#20232b;
   }
   h1,h2{font-family:'Poppins',sans-serif;}
   a{color:inherit;}
@@ -876,9 +880,11 @@
     if (user) {
       adminLoginBox.classList.add('hidden');
       adminPanel.classList.add('on');
+      document.body.classList.add('admin-ativo');
     } else {
       adminLoginBox.classList.remove('hidden');
       adminPanel.classList.remove('on');
+      document.body.classList.remove('admin-ativo');
     }
   });
 
