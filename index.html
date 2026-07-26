@@ -1199,6 +1199,11 @@
     ev.preventDefault();
     if (selecionados.size === 0) return;
 
+    // Abre a aba já aqui, de forma síncrona com o clique — se esperarmos a
+    // transação do Firestore (await) antes de chamar window.open, navegadores
+    // desktop tratam como pop-up não solicitado e bloqueiam silenciosamente.
+    const abaWhatsApp = window.open('', '_blank');
+
     const nomeComprador = compradorNomeInput.value.trim().replace(/\s+/g, ' ');
     const telefoneDigitado = compradorTelefoneInput.value.trim();
     const telefoneComprador = telefoneDigitado.replace(/\D/g, '');
@@ -1219,11 +1224,13 @@
       temErro = true;
     }
     if (temErro) {
+      if (abaWhatsApp) abaWhatsApp.close();
       (erroNome.textContent ? compradorNomeInput : compradorTelefoneInput).focus();
       return;
     }
 
     if (selecionados.size > MAX_NUMEROS_POR_RESERVA) {
+      if (abaWhatsApp) abaWhatsApp.close();
       alert(`Você pode reservar no máximo ${MAX_NUMEROS_POR_RESERVA} números por vez.`);
       return;
     }
@@ -1255,6 +1262,7 @@
         });
       });
     } catch (e) {
+      if (abaWhatsApp) abaWhatsApp.close();
       const idIndisponivel = String(e.message || '').split('NUMERO_INDISPONIVEL:')[1];
       if (idIndisponivel) {
         alert(`O número ${idIndisponivel} acabou de ser reservado por outra pessoa. Escolha outro.`);
@@ -1272,7 +1280,14 @@
     const mensagem = encodeURIComponent(
       `Oi! Quero reservar os números ${ordenados.join(', ')} da rifa da viagem ao Chile. Total: R$ ${total.toFixed(2).replace('.', ',')}. Vou enviar o comprovante do Pix aqui.`
     );
-    window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${mensagem}`, '_blank');
+    const linkWhatsApp = `https://wa.me/${WHATSAPP_NUMERO}?text=${mensagem}`;
+    if (abaWhatsApp) {
+      abaWhatsApp.location.href = linkWhatsApp;
+    } else {
+      // Pop-up bloqueado mesmo com a abertura síncrona (ex: bloqueador de
+      // terceiros): último recurso, tenta abrir de novo.
+      window.open(linkWhatsApp, '_blank');
+    }
 
     selecionados.clear();
     compradorNomeInput.value = '';
