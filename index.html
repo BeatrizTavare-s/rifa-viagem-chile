@@ -45,9 +45,6 @@
     outline:none;
     box-shadow:var(--focus-ring);
   }
-  body.admin-ativo{
-    background:#20232b;
-  }
   h1,h2{font-family:'Poppins',sans-serif;}
   a{color:inherit;}
 
@@ -259,7 +256,7 @@
   .dot{
     width:10px;height:10px;border-radius:50%;display:inline-block;
   }
-  .dot.livre{background:var(--branco);border:2px solid var(--cinza-300);}
+  .dot.livre{background:var(--cinza-100);border:2px solid var(--cinza-300);}
   .dot.sel{background:var(--azul-500);}
   .dot.reservado{background:var(--amarelo);}
   .dot.pago{background:#b6bac2;}
@@ -276,10 +273,49 @@
   }
 
   /* ---------- NUMBER GRID ---------- */
+  .grid-wrapper{
+    position:relative;
+    min-height:120px;
+  }
   .numbers-grid{
     display:grid;
     grid-template-columns:repeat(auto-fill,minmax(52px,1fr));
     gap:8px;
+  }
+  .grid-wrapper.carregando .numbers-grid{
+    opacity:.35;
+    pointer-events:none;
+  }
+  .grid-loading{
+    display:none;
+    position:absolute;
+    inset:0;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+  }
+  .grid-wrapper.carregando .grid-loading{
+    display:flex;
+  }
+  .grid-loading span{
+    font-size:.85rem;
+    color:var(--texto-suave);
+    font-weight:500;
+  }
+  .spinner{
+    width:32px;
+    height:32px;
+    border:3px solid var(--cinza-300);
+    border-top-color:var(--azul-500);
+    border-radius:50%;
+    animation:girar .7s linear infinite;
+  }
+  @keyframes girar{
+    to{ transform:rotate(360deg); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .spinner{ animation:none; }
   }
   .num{
     background:var(--cinza-100);
@@ -530,6 +566,98 @@
     .cta-bar{ flex-direction:column; align-items:stretch; text-align:center; }
     .btn{ justify-content:center; }
   }
+
+  /* ---------- ADMIN DARK THEME (kept last so it always wins the cascade) ---------- */
+  body.admin-ativo{
+    background:linear-gradient(160deg,#081a33 0%,var(--azul-900) 100%);
+  }
+  body.admin-ativo .card{
+    background:#0f2a4d;
+    color:#e8edf5;
+  }
+  body.admin-ativo h2{
+    color:#ffffff;
+  }
+  body.admin-ativo .edit-note{
+    background:rgba(245,166,35,.12);
+    border-color:rgba(245,166,35,.35);
+    color:#f5d896;
+  }
+  body.admin-ativo .info-grid div:not(.destaque){
+    background:rgba(255,255,255,.06);
+  }
+  body.admin-ativo .info-grid strong{
+    color:#9fc2ff;
+  }
+  body.admin-ativo .info-grid span,
+  body.admin-ativo .progress-label,
+  body.admin-ativo .pix-box .sub,
+  body.admin-ativo ul.rules li{
+    color:#b9c4d6;
+  }
+  body.admin-ativo .pix-box{
+    background:rgba(255,255,255,.06);
+  }
+  body.admin-ativo .legend > span{
+    background:rgba(255,255,255,.08);
+    color:#b9c4d6;
+  }
+  body.admin-ativo .dot.livre{
+    background:rgba(255,255,255,.08);
+    border-color:#8595ad;
+  }
+  body.admin-ativo .dot.pago{
+    background:#6b7688;
+  }
+  body.admin-ativo .selected-summary{
+    background:rgba(37,99,235,.12);
+    color:#e8edf5;
+  }
+  body.admin-ativo .num.livre{
+    background:rgba(255,255,255,.08);
+    color:#e8edf5;
+  }
+  body.admin-ativo .num.selected{
+    background:var(--azul-500);
+    color:#fff;
+  }
+  body.admin-ativo .num.reservado{
+    background:var(--amarelo);
+    color:#3a2a00;
+  }
+  body.admin-ativo .num.pago{
+    background:rgba(255,255,255,.12);
+    color:#c3cad6;
+    text-decoration:line-through;
+  }
+  body.admin-ativo .cta-bar{
+    background:#0f2a4d;
+    border-top-color:rgba(255,255,255,.1);
+  }
+  body.admin-ativo #cta-text{
+    color:#e8edf5;
+  }
+  body.admin-ativo .comprador-fields input{
+    background:rgba(255,255,255,.08);
+    border-color:rgba(255,255,255,.2);
+    color:#e8edf5;
+  }
+  body.admin-ativo footer{
+    color:#7a8aa3;
+  }
+  body.admin-ativo .admin-panel{
+    background:rgba(245,166,35,.12);
+    border-color:rgba(245,166,35,.4);
+    color:#f5d896;
+  }
+  body.admin-ativo .admin-login-fields input{
+    background:rgba(255,255,255,.08);
+    border-color:rgba(255,255,255,.2);
+    color:#e8edf5;
+  }
+  body.admin-ativo .admin-login-fields input::placeholder{
+    color:#8595ad;
+  }
 </style>
 </head>
 <body>
@@ -593,8 +721,12 @@
       <span><span class="dot pago"></span> Pago / indisponível</span>
     </div>
     <div class="selected-summary" id="summary">Nenhum número selecionado ainda.</div>
-    <div class="numbers-grid" id="grid">
-      <div class="status-msg">Carregando números da rifa...</div>
+    <div class="grid-wrapper" id="grid-wrapper">
+      <div class="numbers-grid" id="grid"></div>
+      <div class="grid-loading" id="grid-loading">
+        <div class="spinner" aria-hidden="true"></div>
+        <span>Carregando números da rifa...</span>
+      </div>
     </div>
   </div>
 
@@ -646,7 +778,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import {
     getFirestore, collection, doc, getDocs, writeBatch,
-    onSnapshot, updateDoc, serverTimestamp
+    onSnapshot, updateDoc, serverTimestamp, runTransaction
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
   import {
     getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged
@@ -683,6 +815,7 @@
   const numerosCol = collection(db, "numeros");
 
   const grid = document.getElementById('grid');
+  const gridWrapper = document.getElementById('grid-wrapper');
   const summary = document.getElementById('summary');
   const ctaText = document.getElementById('cta-text');
   const waBtn = document.getElementById('whatsapp-btn');
@@ -724,6 +857,7 @@
   let estado = {};       // { "001": {status:"livre"}, ... }
   let selecionados = new Set();
   let adminMode = false;
+  let dadosCarregados = false;
   const elementos = {};  // cache dos elementos .num por número
 
   // ------------------------------------------------------
@@ -731,6 +865,7 @@
   // ------------------------------------------------------
   function montarGrid() {
     grid.innerHTML = '';
+    gridWrapper.classList.add('carregando');
     for (let i = 1; i <= TOTAL_NUMEROS; i++) {
       const id = String(i).padStart(3, '0');
       const div = document.createElement('div');
@@ -775,6 +910,11 @@
         const id = change.doc.id;
         estado[id] = change.doc.data();
       });
+      if (!dadosCarregados) {
+        dadosCarregados = true;
+        gridWrapper.classList.remove('carregando');
+        atualizarResumoSelecao();
+      }
       atualizarGridVisual();
       atualizarProgresso();
     });
@@ -812,6 +952,7 @@
   // Clique num número: comportamento muda se estiver em modo admin
   // ------------------------------------------------------
   async function onClickNumero(id) {
+    if (!dadosCarregados) return;
     const atual = (estado[id] && estado[id].status) || 'livre';
 
     if (adminMode) {
@@ -843,17 +984,56 @@
     modalBox.innerHTML = '';
   }
 
-  async function definirStatus(id, novoStatus) {
+  async function definirStatus(id, novoStatus, extraData) {
     try {
       await updateDoc(doc(db, "numeros", id), {
         status: novoStatus,
-        atualizadoEm: serverTimestamp()
+        atualizadoEm: serverTimestamp(),
+        ...(extraData || {})
       });
     } catch (e) {
       alert('Não foi possível atualizar o número ' + id + '. Confira se você está logada e as regras do Firestore.');
       console.error(e);
     }
     fecharModal();
+  }
+
+  function abrirModalDadosComprador(id, novoStatus) {
+    const rotuloAcao = novoStatus === 'pago' ? 'Marcar como pago' : 'Marcar como reservado';
+    modalBox.innerHTML = `
+      <h3>Número ${id}</h3>
+      <p>Informe quem está reservando este número antes de continuar.</p>
+      <div class="admin-login-fields" style="margin-bottom:16px; flex-direction:column;">
+        <input type="text" id="admin-comprador-nome" placeholder="Nome" maxlength="100" autocomplete="name">
+        <input type="tel" id="admin-comprador-telefone" placeholder="WhatsApp (com DDD)" maxlength="15" autocomplete="tel" inputmode="numeric">
+      </div>
+      <div class="modal-actions">
+        <button class="modal-btn pago" id="admin-comprador-confirmar">${rotuloAcao}</button>
+        <button class="modal-btn cancelar" id="admin-comprador-cancelar">Cancelar</button>
+      </div>
+    `;
+    modalOverlay.classList.add('on');
+
+    const nomeInput = document.getElementById('admin-comprador-nome');
+    const telefoneInput = document.getElementById('admin-comprador-telefone');
+    telefoneInput.addEventListener('input', () => {
+      telefoneInput.value = formatarTelefone(telefoneInput.value.replace(/\D/g, ''));
+    });
+
+    document.getElementById('admin-comprador-confirmar').addEventListener('click', () => {
+      const nomeComprador = nomeInput.value.trim().replace(/\s+/g, ' ');
+      const telefoneComprador = telefoneInput.value.replace(/\D/g, '');
+      if (nomeComprador.length < 3 || !/^[A-Za-zÀ-ÖØ-öø-ÿ' -]+$/.test(nomeComprador)) {
+        alert('Digite um nome válido (mínimo 3 letras).');
+        return;
+      }
+      if (telefoneComprador.length < 10 || telefoneComprador.length > 11) {
+        alert('Digite um WhatsApp válido com DDD (10 ou 11 dígitos).');
+        return;
+      }
+      definirStatus(id, novoStatus, { nomeComprador, telefoneComprador });
+    });
+    document.getElementById('admin-comprador-cancelar').addEventListener('click', () => abrirModalAdmin(id, 'livre'));
   }
 
   function abrirModalAdmin(id, statusAtual) {
@@ -888,6 +1068,10 @@
       btn.addEventListener('click', () => {
         const novoStatus = btn.dataset.status;
         if (!novoStatus) { fecharModal(); return; }
+        if (statusAtual === 'livre' && (novoStatus === 'reservado' || novoStatus === 'pago')) {
+          abrirModalDadosComprador(id, novoStatus);
+          return;
+        }
         definirStatus(id, novoStatus);
       });
     });
@@ -901,6 +1085,12 @@
   });
 
   function atualizarResumoSelecao() {
+    if (!dadosCarregados) {
+      summary.textContent = 'Carregando números da rifa...';
+      ctaText.textContent = 'Carregando...';
+      waBtn.classList.add('disabled');
+      return;
+    }
     if (selecionados.size === 0) {
       summary.textContent = 'Nenhum número selecionado ainda.';
       ctaText.textContent = 'Selecione seus números acima para continuar';
@@ -953,32 +1143,41 @@
 
     const ordenados = [...selecionados].sort();
 
-    // confere de novo se continuam livres (evita corrida com outro comprador)
-    for (const id of ordenados) {
-      const statusAtual = (estado[id] && estado[id].status) || 'livre';
-      if (statusAtual !== 'livre') {
-        alert(`O número ${id} acabou de ser reservado por outra pessoa. Escolha outro.`);
-        selecionados.delete(id);
+    // Transação: lê o status direto do servidor (não do cache local) e só
+    // confirma a escrita se TODOS ainda estiverem livres naquele instante,
+    // evitando que duas pessoas reservem o mesmo número em uma corrida.
+    try {
+      await runTransaction(db, async (tx) => {
+        const refs = ordenados.map(id => doc(db, "numeros", id));
+        const snaps = await Promise.all(refs.map(ref => tx.get(ref)));
+
+        for (let i = 0; i < ordenados.length; i++) {
+          const statusAtual = snaps[i].data()?.status || 'livre';
+          if (statusAtual !== 'livre') {
+            throw new Error(`NUMERO_INDISPONIVEL:${ordenados[i]}`);
+          }
+        }
+
+        refs.forEach(ref => {
+          tx.update(ref, {
+            status: "reservado",
+            nomeComprador,
+            telefoneComprador,
+            atualizadoEm: serverTimestamp()
+          });
+        });
+      });
+    } catch (e) {
+      const idIndisponivel = String(e.message || '').split('NUMERO_INDISPONIVEL:')[1];
+      if (idIndisponivel) {
+        alert(`O número ${idIndisponivel} acabou de ser reservado por outra pessoa. Escolha outro.`);
+        selecionados.delete(idIndisponivel);
         atualizarGridVisual();
         atualizarResumoSelecao();
-        return;
+      } else {
+        alert('Não foi possível reservar agora. Tente novamente em instantes.');
+        console.error(e);
       }
-    }
-
-    try {
-      const batch = writeBatch(db);
-      for (const id of ordenados) {
-        batch.update(doc(db, "numeros", id), {
-          status: "reservado",
-          nomeComprador,
-          telefoneComprador,
-          atualizadoEm: serverTimestamp()
-        });
-      }
-      await batch.commit();
-    } catch (e) {
-      alert('Não foi possível reservar agora. Tente novamente em instantes.');
-      console.error(e);
       return;
     }
 
@@ -1049,6 +1248,7 @@
   // Start
   // ------------------------------------------------------
   montarGrid();
+  atualizarResumoSelecao();
   seedSeNecessario().then(escutarMudancas);
 </script>
 
