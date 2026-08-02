@@ -155,6 +155,7 @@
   }
   .destaque-verde{
     color:#4ade80;
+    font-size:1.15em;
   }
   .neve-legenda{
     display:block;
@@ -197,16 +198,6 @@
     display:inline-block;
   }
 
-  /* ---------- EDIT NOTE ---------- */
-  .edit-note{
-    background:#fff8e1;
-    border:1px solid #ffe082;
-    border-radius:var(--radius-md);
-    padding:16px 20px;
-    font-size:.85rem;
-    color:#7a5c00;
-  }
-
   /* ---------- INFO GRID ---------- */
   .info-grid{
     display:grid;
@@ -237,27 +228,6 @@
   }
   .info-grid .destaque strong,
   .info-grid .destaque span{ color:var(--branco); }
-
-  /* ---------- PROGRESS ---------- */
-  .progress-bar-outer{
-    background:var(--cinza-100);
-    border-radius:20px;
-    height:16px;
-    overflow:hidden;
-    margin-bottom:12px;
-  }
-  .progress-bar-inner{
-    background:linear-gradient(90deg,var(--verde),#26a65b);
-    height:100%;
-    width:0%;
-    border-radius:20px;
-    transition:width .4s ease;
-  }
-  .progress-label{
-    font-size:.9rem;
-    color:var(--texto-suave);
-    font-weight:500;
-  }
 
   /* ---------- RULES ---------- */
   ul.rules{
@@ -297,6 +267,25 @@
     border-left:4px solid var(--coral);
   }
   .pix-box strong{color:var(--coral-dark);}
+  .copiar-pix-btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    margin-left:6px;
+    padding:0;
+    width:22px;
+    height:22px;
+    font-size:1rem;
+    line-height:1;
+    background:none;
+    border:none;
+    cursor:pointer;
+    vertical-align:middle;
+    opacity:.55;
+    transition:opacity .15s ease;
+  }
+  .copiar-pix-btn:hover{opacity:1;}
+  .copiar-pix-btn.copiado{opacity:1;}
   .pix-box .sub{
     display:block;
     margin-top:8px;
@@ -657,11 +646,6 @@
   body.admin-ativo h2{
     color:#ffffff;
   }
-  body.admin-ativo .edit-note{
-    background:rgba(245,166,35,.12);
-    border-color:rgba(245,166,35,.35);
-    color:#f5d896;
-  }
   body.admin-ativo .info-grid div:not(.destaque){
     background:rgba(255,255,255,.06);
   }
@@ -669,7 +653,6 @@
     color:#9fc2ff;
   }
   body.admin-ativo .info-grid span,
-  body.admin-ativo .progress-label,
   body.admin-ativo .pix-box .sub,
   body.admin-ativo ul.rules li{
     color:#b9c4d6;
@@ -744,8 +727,9 @@
     <img src="mascote.png" alt="Mascote da rifa segurando a bandeira do Chile" class="mascote">
     <div class="header-text">
       <span class="badge">🇨🇱 Bora fazer esse sonho decolar?</span>
-      <h1>Compra um número, torce um pouquinho e talvez você que leve os <span class="destaque-verde">R$ 500</span>! 🎉</h1>
-      <p>Tô juntando uma grana pra realizar o sonho de conhecer o Chile, e cada número vendido me deixa mais perto disso — enquanto isso, alguém sortudo(a) sai daqui R$ 500,00 mais rico(a). Só R$ 10 o número, escolhe o seu aí embaixo e vem com a gente nessa! 💙</p>
+      <h1>E se o próximo número sorteado fosse o seu! 🎉</h1>
+      <p>Estou juntando uma grana para realizar o sonho de conhecer o Chile. Enquanto você concorre a <span class="destaque-verde">R$ 500</span>, cada número comprado me deixa mais perto desse objetivo.</p>
+      <p>Só R$ 10,00 por número! Escolha o seu e boa sorte! 🍀</p>
       <span class="neve-legenda">❄️ Nem a neve dos Andes esfria essa vontade de te ver ganhando!</span>
     </div>
   </div>
@@ -753,44 +737,33 @@
 
 <div class="container">
 
-  <div class="card edit-note">
-    ✏️ <strong>Nota para edição:</strong> antes de publicar, troque os placeholders <code>[CHAVE PIX]</code>, <code>[NOME DO TITULAR PIX]</code>, <code>[DATA DO SORTEIO]</code>, <code>[INSTAGRAM]</code>. O login administrativo agora é feito com um e-mail/senha real, criado por você no console do Firebase — veja o guia <em>instrucoes-configuracao.md</em> que veio junto com este arquivo.
-  </div>
-
   <div class="card">
     <div class="info-grid">
       <div class="destaque"><strong>R$ 500,00</strong><span>prêmio (em dinheiro)</span></div>
-      <div><strong>250</strong><span>números disponíveis</span></div>
       <div><strong>R$ 10,00</strong><span>por número</span></div>
-      <div><strong>R$ 2.500,00</strong><span>total arrecadado</span></div>
-      <div><strong>[DATA DO SORTEIO]</strong><span>data do sorteio</span></div>
+      <div><strong>Sorteio</strong><span>após a venda de todos os números</span></div>
     </div>
-  </div>
-
-  <div class="card">
-    <h2>Andamento da rifa</h2>
-    <div class="progress-bar-outer"><div class="progress-bar-inner" id="progress-bar"></div></div>
-    <div class="progress-label" id="progress-label">Carregando números...</div>
   </div>
 
   <div class="card">
     <h2>Como funciona</h2>
     <ul class="rules">
-      <li>Escolha um ou mais números <strong>disponíveis</strong> na grade abaixo (fica em amarelo quando alguém reserva, e some/risca quando é confirmado o pagamento).</li>
-      <li>Clique em "Reservar pelo WhatsApp" — o número fica marcado como reservado na hora, pra ninguém mais escolher o mesmo, e abre uma conversa no WhatsApp.</li>
-      <li>Faça o pagamento via Pix e envie o comprovante na conversa.</li>
-      <li>Assim que o pagamento é conferido, a organizadora dá baixa no número pelo painel administrativo, e ele aparece como "pago" pra todo mundo.</li>
-      <li>O ganhador(a) leva <strong>R$ 500,00 em dinheiro</strong>; toda a renda arrecadada com os números vai para a viagem ao Chile.</li>
-      <li>O sorteio será feito com base no resultado da Loteria Federal em <strong>[DATA DO SORTEIO]</strong>.</li>
-      <li>O ganhador(a) será contatado(a) diretamente e o resultado será divulgado no Instagram <strong>[INSTAGRAM]</strong>.</li>
+      <li>Escolha seus números na grade abaixo.</li>
+      <li>Reserve pelo WhatsApp e faça o pagamento via Pix.</li>
+      <li>Após a confirmação do pagamento, seu número será marcado como pago.</li>
+      <li>O sorteio será realizado após a venda de todos os números.</li>
+      <li>O ganhador recebe R$ 500 via Pix e o resultado será divulgado no Instagram.</li>
     </ul>
   </div>
 
   <div class="card">
     <h2>Pagamento via Pix</h2>
     <div class="pix-box">
-      Chave Pix: <strong>[CHAVE PIX]</strong><br>
-      Titular: <strong>[NOME DO TITULAR PIX]</strong>
+      Chave Pix: <strong id="pix-chave">14998064961</strong>
+      <button type="button" class="copiar-pix-btn" id="copiar-pix-btn" aria-label="Copiar chave Pix">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+      </button><br>
+      Titular: <strong>Tathiane Gonçalves</strong>
       <span class="sub">Após pagar, envie o comprovante pelo WhatsApp junto com o(s) número(s) escolhido(s). O número só fica confirmado como "pago" depois que a organizadora conferir.</span>
     </div>
   </div>
@@ -833,7 +806,7 @@
 </div>
 
 <footer class="footer-card">
-  Feito com carinho para tornar essa viagem realidade 🇨🇱 · Dúvidas? Chame no WhatsApp ou Instagram <strong>[INSTAGRAM]</strong>
+  Feito com carinho para tornar essa viagem realidade 🇨🇱 · Dúvidas? Chame no WhatsApp ou Instagram <strong><a href="https://www.instagram.com/goncalves.tathi/" target="_blank" rel="noopener">@goncalves.tathi</a></strong>
 </footer>
 
 <div class="modal-overlay" id="modal-overlay">
@@ -887,7 +860,7 @@
 
   const TOTAL_NUMEROS = 250;
   const MAX_NUMEROS_POR_RESERVA = 10;
-  const WHATSAPP_NUMERO = atob("NTUxNDk5ODY2MzU4MQ==");
+  const WHATSAPP_NUMERO = atob("NTUxNDk5Njc1NTkxNQ==");
 
   // ======================================================
   // 2) Inicialização do Firebase
@@ -903,8 +876,24 @@
   const ctaBar = document.getElementById('cta-bar');
   const ctaText = document.getElementById('cta-text');
   const waBtn = document.getElementById('whatsapp-btn');
-  const progressBar = document.getElementById('progress-bar');
-  const progressLabel = document.getElementById('progress-label');
+  const copiarPixBtn = document.getElementById('copiar-pix-btn');
+  const pixChave = document.getElementById('pix-chave');
+  const copiarPixIconOriginal = copiarPixBtn.innerHTML;
+  const copiarPixIconCheck = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+
+  copiarPixBtn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(pixChave.textContent.trim());
+      copiarPixBtn.innerHTML = copiarPixIconCheck;
+      copiarPixBtn.classList.add('copiado');
+      setTimeout(() => {
+        copiarPixBtn.innerHTML = copiarPixIconOriginal;
+        copiarPixBtn.classList.remove('copiado');
+      }, 1500);
+    } catch (e) {
+      alert('Não foi possível copiar. Chave Pix: ' + pixChave.textContent.trim());
+    }
+  });
   const adminLoginBox = document.getElementById('admin-login-box');
   const adminEmailInput = document.getElementById('admin-email');
   const adminPasswordInput = document.getElementById('admin-password');
@@ -1001,7 +990,6 @@
         atualizarResumoSelecao();
       }
       atualizarGridVisual();
-      atualizarProgresso();
     });
   }
 
@@ -1020,17 +1008,6 @@
         el.setAttribute('aria-label', `Número ${id}, ${ROTULO_STATUS[status]}`);
       }
     }
-  }
-
-  function atualizarProgresso() {
-    const total = TOTAL_NUMEROS;
-    let pagos = 0;
-    for (const id in estado) {
-      if (estado[id].status === 'pago') pagos++;
-    }
-    const pct = Math.round((pagos / total) * 100);
-    progressBar.style.width = pct + '%';
-    progressLabel.textContent = `${pagos} de ${total} números pagos (${pct}%) — R$ ${(pagos*10).toFixed(2).replace('.',',')} arrecadados`;
   }
 
   // ------------------------------------------------------
