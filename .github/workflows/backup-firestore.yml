@@ -4,11 +4,10 @@ name: Daily Firestore backup
 # and repo variables aren't evaluated here, so to change the backup time
 # edit the line below directly.
 # Format: "minute hour * * *", both in UTC.
-# TEMP FOR TESTING: every 10 minutes — revert to "0 9 * * *" (09:00 UTC
-# = 06:00 America/Sao_Paulo) once the workflow is confirmed working.
+# Runs once a day at 09:00 UTC (06:00 America/Sao_Paulo).
 on:
   schedule:
-    - cron: "*/10 * * * *"
+    - cron: "0 9 * * *"
   workflow_dispatch: {}
 
 jobs:
