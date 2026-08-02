@@ -806,7 +806,7 @@
 </div>
 
 <footer class="footer-card">
-  Feito com carinho para tornar essa viagem realidade 🇨🇱 · Dúvidas? Chame no WhatsApp ou Instagram <strong><a href="https://www.instagram.com/goncalves.tathi/" target="_blank" rel="noopener">@goncalves.tathi</a></strong>
+  Feito com carinho para tornar essa viagem realidade 🇨🇱 · Dúvidas? Chame no <a href="#" id="footer-whatsapp-link" target="_blank" rel="noopener">WhatsApp</a> ou Instagram <strong><a href="https://www.instagram.com/goncalves.tathi/" target="_blank" rel="noopener">@goncalves.tathi</a></strong>
 </footer>
 
 <div class="modal-overlay" id="modal-overlay">
@@ -861,6 +861,10 @@
   const TOTAL_NUMEROS = 250;
   const MAX_NUMEROS_POR_RESERVA = 10;
   const WHATSAPP_NUMERO = atob("NTUxNDk5Njc1NTkxNQ==");
+  const footerWhatsAppLink = document.getElementById('footer-whatsapp-link');
+  if (footerWhatsAppLink) {
+    footerWhatsAppLink.href = `https://wa.me/${WHATSAPP_NUMERO}`;
+  }
 
   // ======================================================
   // 2) Inicialização do Firebase
@@ -1089,7 +1093,7 @@
         alert('Digite um nome válido (mínimo 3 letras).');
         return;
       }
-      if (telefoneComprador.length < 10 || telefoneComprador.length > 11) {
+      if (telefoneComprador.length > 0 && (telefoneComprador.length < 10 || telefoneComprador.length > 11)) {
         alert('Digite um WhatsApp válido com DDD (10 ou 11 dígitos).');
         return;
       }
