@@ -834,7 +834,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import {
     getFirestore, collection, doc, getDocs, writeBatch,
-    onSnapshot, updateDoc, serverTimestamp, runTransaction
+    onSnapshot, updateDoc, serverTimestamp, runTransaction, deleteField
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
   import {
     getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged
@@ -1136,6 +1136,10 @@
         if (!novoStatus) { fecharModal(); return; }
         if (statusAtual === 'livre' && (novoStatus === 'reservado' || novoStatus === 'pago')) {
           abrirModalDadosComprador(id, novoStatus);
+          return;
+        }
+        if (novoStatus === 'livre') {
+          definirStatus(id, novoStatus, { nomeComprador: deleteField(), telefoneComprador: deleteField() });
           return;
         }
         definirStatus(id, novoStatus);

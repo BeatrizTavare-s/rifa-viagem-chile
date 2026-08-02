@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Rifa da Viagem ao Chile</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --azul-900:#0b2545;
+    --azul-700:#12386b;
+    --azul-500:#1d5fb0;
+    --coral:#ff6b5e;
+    --coral-dark:#e5493c;
+    --amarelo:#f5a623;
+    --verde:#1e8e3e;
+    --branco:#ffffff;
+    --cinza-50:#f6f7fb;
+    --cinza-100:#eef0f5;
+    --cinza-300:#d8dce6;
+    --texto:#1c2430;
+    --texto-suave:#5b6472;
+    --radius-lg:18px;
+    --radius-md:12px;
+    --shadow:0 10px 30px rgba(11,37,69,.10);
+    --focus-ring:0 0 0 3px rgba(29,95,176,.5);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:'Inter',system-ui,-apple-system,sans-serif;
+    background:var(--cinza-50);
+    color:var(--texto);
+    line-height:1.6;
+    font-size:16px;
+  }
+  a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible{
+    outline:none;
+    box-shadow:var(--focus-ring);
+  }
+  h1,h2{font-family:'Poppins',sans-serif;}
+  header{
+    background:linear-gradient(160deg,var(--azul-900) 0%,var(--azul-700) 55%,var(--azul-500) 100%);
+    color:var(--branco);
+    padding:32px 20px;
+  }
+  header .header-inner{
+    max-width:1000px;
+    margin:0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  header h1{
+    font-size:1.4rem;
+    font-weight:700;
+  }
+  header a{
+    color:#cfe0ff;
+    font-size:.9rem;
+    text-decoration:none;
+  }
+  header a:hover{text-decoration:underline;}
+  .container{
+    max-width:1000px;
+    margin:0 auto;
+    padding:24px 20px 80px;
+  }
+  .card{
+    background:var(--branco);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow);
+    padding:28px;
+    margin-bottom:24px;
+  }
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    background:var(--azul-500);
+    color:#fff;
+    border:none;
+    padding:12px 22px;
+    border-radius:var(--radius-md);
+    font-weight:600;
+    font-size:.95rem;
+    cursor:pointer;
+    text-decoration:none;
+  }
+  .btn:hover{filter:brightness(1.08);}
+  .btn.secundario{background:#999;}
+
+  /* ---------- LOGIN ---------- */
+  #login-box{
+    max-width:380px;
+    margin:60px auto;
+  }
+  .campo{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    margin-bottom:14px;
+  }
+  .campo input{
+    padding:12px 14px;
+    border:1.5px solid var(--cinza-300);
+    border-radius:var(--radius-md);
+    font-size:1rem;
+    font-family:inherit;
+  }
+  .campo input:focus{border-color:var(--azul-500);}
+  #login-erro{
+    color:var(--coral-dark);
+    font-size:.85rem;
+    min-height:1.2em;
+    margin-bottom:10px;
+  }
+
+  /* ---------- SUMMARY ---------- */
+  .resumo-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+    gap:14px;
+    margin-bottom:8px;
+  }
+  .resumo-grid div{
+    background:var(--cinza-100);
+    border-radius:var(--radius-md);
+    padding:16px 10px;
+    text-align:center;
+  }
+  .resumo-grid strong{
+    display:block;
+    font-size:1.4rem;
+    font-weight:700;
+    color:var(--azul-700);
+    font-family:'Poppins',sans-serif;
+  }
+  .resumo-grid span{
+    font-size:.8rem;
+    color:var(--texto-suave);
+  }
+
+  /* ---------- FILTERS ---------- */
+  .filtros{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:18px;
+  }
+  .filtros input, .filtros select{
+    padding:10px 14px;
+    border:1.5px solid var(--cinza-300);
+    border-radius:var(--radius-md);
+    font-size:.92rem;
+    font-family:inherit;
+  }
+  .filtros input{flex:1;min-width:180px;}
+
+  /* ---------- TABLE ---------- */
+  .tabela-wrapper{
+    overflow-x:auto;
+  }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:.9rem;
+  }
+  thead th{
+    text-align:left;
+    padding:10px 12px;
+    color:var(--texto-suave);
+    font-weight:600;
+    border-bottom:2px solid var(--cinza-100);
+    white-space:nowrap;
+  }
+  tbody td{
+    padding:10px 12px;
+    border-bottom:1px solid var(--cinza-100);
+    vertical-align:middle;
+  }
+  tbody tr:hover{background:var(--cinza-50);}
+  .status-pill{
+    display:inline-block;
+    padding:4px 10px;
+    border-radius:999px;
+    font-size:.78rem;
+    font-weight:600;
+  }
+  .status-pill.livre{background:var(--cinza-100);color:var(--texto-suave);}
+  .status-pill.reservado{background:rgba(245,166,35,.15);color:#8a5c00;}
+  .status-pill.pago{background:rgba(30,142,62,.15);color:var(--verde);}
+  .acoes{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+  }
+  .acao-btn{
+    padding:6px 10px;
+    border-radius:8px;
+    border:1px solid var(--cinza-300);
+    background:var(--branco);
+    font-size:.78rem;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .acao-btn:hover{background:var(--cinza-100);}
+  .vazio{
+    text-align:center;
+    color:var(--texto-suave);
+    padding:30px 0;
+  }
+  .oculto{display:none !important;}
+
+  /* ---------- MODAL ---------- */
+  .modal-overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(11,37,69,.45);
+    align-items:center;
+    justify-content:center;
+    z-index:50;
+    padding:20px;
+  }
+  .modal-overlay.on{ display:flex; }
+  .modal-box{
+    background:var(--branco);
+    border-radius:var(--radius-lg);
+    padding:26px;
+    max-width:340px;
+    width:100%;
+    box-shadow:0 20px 50px rgba(0,0,0,.25);
+    text-align:center;
+  }
+  .modal-box h3{
+    font-family:'Poppins',sans-serif;
+    color:var(--azul-900);
+    margin-bottom:6px;
+    font-size:1.1rem;
+  }
+  .modal-box p{
+    color:var(--texto-suave);
+    font-size:.88rem;
+    margin-bottom:18px;
+  }
+  .modal-box .modal-fields{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-bottom:16px;
+  }
+  .modal-box .modal-fields input{
+    padding:12px 14px;
+    border:1.5px solid var(--cinza-300);
+    border-radius:var(--radius-md);
+    font-size:.9rem;
+    font-family:inherit;
+  }
+  .modal-box .modal-fields input:focus{
+    outline:none;
+    border-color:var(--azul-500);
+  }
+  .modal-box .modal-actions{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .modal-btn{
+    border:none;
+    border-radius:999px;
+    padding:12px 18px;
+    font-weight:700;
+    font-size:.9rem;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .modal-btn.pago{ background:#1e8e3e; color:#fff; }
+  .modal-btn.reservado{ background:var(--amarelo); color:#fff; }
+  .modal-btn.livre{ background:var(--cinza-100); color:var(--texto); }
+  .modal-btn.cancelar{ background:none; color:var(--texto-suave); text-decoration:underline; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <h1>🇨🇱 Painel administrativo — Rifa</h1>
+    <a href="index.html">← Voltar para o site</a>
+  </div>
+</header>
+
+<div class="container">
+
+  <div id="login-box" class="card">
+    <h2 style="margin-bottom:16px;">Login administrativo</h2>
+    <div class="campo">
+      <input type="email" id="login-email" placeholder="seu e-mail" autocomplete="username">
+    </div>
+    <div class="campo">
+      <input type="password" id="login-senha" placeholder="senha" autocomplete="current-password">
+    </div>
+    <div id="login-erro"></div>
+    <button class="btn" id="login-btn">Entrar</button>
+  </div>
+
+  <div id="painel" class="oculto">
+
+    <div class="card">
+      <div class="resumo-grid" id="resumo-grid"></div>
+    </div>
+
+    <div class="card">
+      <div class="filtros">
+        <input type="text" id="busca" placeholder="Buscar por número, nome ou WhatsApp...">
+        <select id="filtro-status">
+          <option value="todos">Todos os status</option>
+          <option value="livre">Livre</option>
+          <option value="reservado">Reservado</option>
+          <option value="pago">Pago</option>
+        </select>
+        <button class="btn secundario" id="sair-btn">Sair</button>
+      </div>
+
+      <div class="tabela-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Número</th>
+              <th>Comprador</th>
+              <th>WhatsApp</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-corpo"></tbody>
+        </table>
+      </div>
+      <div class="vazio oculto" id="tabela-vazia">Nenhum número encontrado com esse filtro.</div>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-box" id="modal-box"></div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getFirestore, collection, doc, onSnapshot, updateDoc, serverTimestamp, deleteField
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import {
+    getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAVX0UOxvHWOLctuIGWs3Q37Jw-2yuLbQ8",
+    authDomain: "rifa-viagem-chile.firebaseapp.com",
+    projectId: "rifa-viagem-chile",
+    storageBucket: "rifa-viagem-chile.firebasestorage.app",
+    messagingSenderId: "825347393780",
+    appId: "1:825347393780:web:a45c552c6942532372b6a1",
+    measurementId: "G-4RHR6SHG1N"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+  const numerosCol = collection(db, "numeros");
+
+  const loginBox = document.getElementById('login-box');
+  const loginEmail = document.getElementById('login-email');
+  const loginSenha = document.getElementById('login-senha');
+  const loginBtn = document.getElementById('login-btn');
+  const loginErro = document.getElementById('login-erro');
+  const sairBtn = document.getElementById('sair-btn');
+  const painel = document.getElementById('painel');
+  const resumoGrid = document.getElementById('resumo-grid');
+  const tabelaCorpo = document.getElementById('tabela-corpo');
+  const tabelaVazia = document.getElementById('tabela-vazia');
+  const busca = document.getElementById('busca');
+  const filtroStatus = document.getElementById('filtro-status');
+  const modalOverlay = document.getElementById('modal-overlay');
+  const modalBox = document.getElementById('modal-box');
+
+  const ROTULO_STATUS = { livre: 'Livre', reservado: 'Reservado', pago: 'Pago' };
+
+  let estado = {};
+  let unsubscribe = null;
+
+  loginBtn.addEventListener('click', fazerLogin);
+  loginSenha.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') fazerLogin(); });
+
+  async function fazerLogin() {
+    loginErro.textContent = '';
+    const email = loginEmail.value.trim();
+    const senha = loginSenha.value;
+    if (!email || !senha) {
+      loginErro.textContent = 'Preencha e-mail e senha.';
+      return;
+    }
+    try {
+      await signInWithEmailAndPassword(auth, email, senha);
+    } catch (e) {
+      loginErro.textContent = 'E-mail ou senha inválidos.';
+    }
+  }
+
+  sairBtn.addEventListener('click', () => signOut(auth));
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      loginBox.classList.add('oculto');
+      painel.classList.remove('oculto');
+      if (!unsubscribe) escutarMudancas();
+    } else {
+      loginBox.classList.remove('oculto');
+      painel.classList.add('oculto');
+      loginSenha.value = '';
+      if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+      estado = {};
+    }
+  });
+
+  function escutarMudancas() {
+    unsubscribe = onSnapshot(numerosCol, (snap) => {
+      snap.docChanges().forEach(change => {
+        estado[change.doc.id] = change.doc.data();
+      });
+      renderizar();
+    });
+  }
+
+  busca.addEventListener('input', renderizar);
+  filtroStatus.addEventListener('change', renderizar);
+
+  function renderizar() {
+    const ids = Object.keys(estado).sort();
+    let livres = 0, reservados = 0, pagos = 0;
+    for (const id of ids) {
+      const s = estado[id].status || 'livre';
+      if (s === 'livre') livres++;
+      else if (s === 'reservado') reservados++;
+      else if (s === 'pago') pagos++;
+    }
+    resumoGrid.innerHTML = `
+      <div><strong>${ids.length}</strong><span>números</span></div>
+      <div><strong>${livres}</strong><span>livres</span></div>
+      <div><strong>${reservados}</strong><span>reservados</span></div>
+      <div><strong>${pagos}</strong><span>pagos</span></div>
+      <div><strong>R$ ${(pagos * 10).toFixed(2).replace('.', ',')}</strong><span>arrecadado (pago)</span></div>
+    `;
+
+    const termo = busca.value.trim().toLowerCase();
+    const statusFiltro = filtroStatus.value;
+
+    const linhas = ids.filter(id => {
+      const dados = estado[id];
+      const status = dados.status || 'livre';
+      if (statusFiltro !== 'todos' && status !== statusFiltro) return false;
+      if (!termo) return true;
+      const nome = (dados.nomeComprador || '').toLowerCase();
+      const tel = (dados.telefoneComprador || '').toLowerCase();
+      return id.toLowerCase().includes(termo) || nome.includes(termo) || tel.includes(termo);
+    });
+
+    tabelaVazia.classList.toggle('oculto', linhas.length > 0);
+    tabelaCorpo.innerHTML = linhas.map(id => {
+      const dados = estado[id];
+      const status = dados.status || 'livre';
+      return `
+        <tr>
+          <td>${id}</td>
+          <td>${dados.nomeComprador || '—'}</td>
+          <td>${dados.telefoneComprador || '—'}</td>
+          <td><span class="status-pill ${status}">${ROTULO_STATUS[status]}</span></td>
+          <td><div class="acoes"><button class="acao-btn" data-id="${id}">Gerenciar</button></div></td>
+        </tr>
+      `;
+    }).join('');
+
+    tabelaCorpo.querySelectorAll('.acao-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        abrirModalAdmin(id, (estado[id].status || 'livre'));
+      });
+    });
+  }
+
+  function fecharModal() {
+    modalOverlay.classList.remove('on');
+    modalBox.innerHTML = '';
+  }
+
+  function formatarTelefone(digitos) {
+    digitos = digitos.slice(0, 11);
+    if (digitos.length <= 2) return digitos;
+    if (digitos.length <= 6) return `(${digitos.slice(0, 2)}) ${digitos.slice(2)}`;
+    if (digitos.length <= 10) return `(${digitos.slice(0, 2)}) ${digitos.slice(2, 6)}-${digitos.slice(6)}`;
+    return `(${digitos.slice(0, 2)}) ${digitos.slice(2, 7)}-${digitos.slice(7)}`;
+  }
+
+  async function definirStatus(id, novoStatus, extraData) {
+    try {
+      await updateDoc(doc(db, "numeros", id), {
+        status: novoStatus,
+        atualizadoEm: serverTimestamp(),
+        ...(extraData || {})
+      });
+    } catch (e) {
+      alert('Não foi possível atualizar o número ' + id + '. Confira as regras do Firestore.');
+      console.error(e);
+    }
+    fecharModal();
+  }
+
+  function abrirModalDadosComprador(id, novoStatus) {
+    const rotuloAcao = novoStatus === 'pago' ? 'Marcar como pago' : 'Marcar como reservado';
+    modalBox.innerHTML = `
+      <h3>Número ${id}</h3>
+      <p>Informe quem está reservando este número antes de continuar.</p>
+      <div class="modal-fields">
+        <input type="text" id="admin-comprador-nome" placeholder="Nome" maxlength="100" autocomplete="name">
+        <input type="tel" id="admin-comprador-telefone" placeholder="WhatsApp (com DDD)" maxlength="15" autocomplete="tel" inputmode="numeric">
+      </div>
+      <div class="modal-actions">
+        <button class="modal-btn pago" id="admin-comprador-confirmar">${rotuloAcao}</button>
+        <button class="modal-btn cancelar" id="admin-comprador-cancelar">Cancelar</button>
+      </div>
+    `;
+    modalOverlay.classList.add('on');
+
+    const nomeInput = document.getElementById('admin-comprador-nome');
+    const telefoneInput = document.getElementById('admin-comprador-telefone');
+    telefoneInput.addEventListener('input', () => {
+      telefoneInput.value = formatarTelefone(telefoneInput.value.replace(/\D/g, ''));
+    });
+
+    document.getElementById('admin-comprador-confirmar').addEventListener('click', () => {
+      const nomeComprador = nomeInput.value.trim().replace(/\s+/g, ' ');
+      const telefoneComprador = telefoneInput.value.replace(/\D/g, '');
+      if (nomeComprador.length < 3 || !/^[A-Za-zÀ-ÖØ-öø-ÿ' -]+$/.test(nomeComprador)) {
+        alert('Digite um nome válido (mínimo 3 letras).');
+        return;
+      }
+      if (telefoneComprador.length > 0 && (telefoneComprador.length < 10 || telefoneComprador.length > 11)) {
+        alert('Digite um WhatsApp válido com DDD (10 ou 11 dígitos).');
+        return;
+      }
+      definirStatus(id, novoStatus, { nomeComprador, telefoneComprador });
+    });
+    document.getElementById('admin-comprador-cancelar').addEventListener('click', () => abrirModalAdmin(id, 'livre'));
+  }
+
+  function abrirModalAdmin(id, statusAtual) {
+    const rotulo = { livre: 'Disponível', reservado: 'Reservado (aguardando pagamento)', pago: 'Pago' }[statusAtual];
+    const dados = estado[id] || {};
+    let compradorHtml = '';
+    if (dados.nomeComprador) {
+      compradorHtml = `<p>Comprador(a): <strong>${dados.nomeComprador}</strong><br>WhatsApp: <strong>${dados.telefoneComprador || '—'}</strong></p>`;
+    }
+    let botoesHtml = '';
+
+    if (statusAtual === 'livre') {
+      botoesHtml += `<button class="modal-btn reservado" data-status="reservado">Marcar como reservado</button>`;
+      botoesHtml += `<button class="modal-btn pago" data-status="pago">Marcar como pago</button>`;
+    } else if (statusAtual === 'reservado') {
+      botoesHtml += `<button class="modal-btn pago" data-status="pago">✅ Marcar como pago</button>`;
+      botoesHtml += `<button class="modal-btn livre" data-status="livre">↩️ Liberar (voltar pra livre)</button>`;
+    } else if (statusAtual === 'pago') {
+      botoesHtml += `<button class="modal-btn livre" data-status="livre">↩️ Liberar (voltar pra livre)</button>`;
+    }
+    botoesHtml += `<button class="modal-btn cancelar" data-status="">Cancelar</button>`;
+
+    modalBox.innerHTML = `
+      <h3>Número ${id}</h3>
+      <p>Status atual: <strong>${rotulo}</strong></p>
+      ${compradorHtml}
+      <div class="modal-actions">${botoesHtml}</div>
+    `;
+    modalOverlay.classList.add('on');
+
+    modalBox.querySelectorAll('.modal-btn[data-status]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const novoStatus = btn.dataset.status;
+        if (!novoStatus) { fecharModal(); return; }
+        if (statusAtual === 'livre' && (novoStatus === 'reservado' || novoStatus === 'pago')) {
+          abrirModalDadosComprador(id, novoStatus);
+          return;
+        }
+        if (novoStatus === 'livre') {
+          definirStatus(id, novoStatus, { nomeComprador: deleteField(), telefoneComprador: deleteField() });
+          return;
+        }
+        definirStatus(id, novoStatus);
+      });
+    });
+  }
+
+  modalOverlay.addEventListener('click', (ev) => {
+    if (ev.target === modalOverlay) fecharModal();
+  });
+  document.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Escape') fecharModal();
+  });
+</script>
+
+</body>
+</html>
